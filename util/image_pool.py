@@ -50,5 +50,4 @@ class ImagePool():
                     return_images.append(tmp)
                 else:       # by another 50% chance, the buffer will return the current image
                     return_images.append(image)
-        return_images = torch.cat(return_images, 0)   # collect all the images and return
-        return return_images
+        return torch.cat(return_images, 0)

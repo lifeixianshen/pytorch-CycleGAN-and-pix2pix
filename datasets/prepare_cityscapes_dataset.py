@@ -20,24 +20,25 @@ def load_resized_img(path):
 def check_matching_pair(segmap_path, photo_path):
     segmap_identifier = os.path.basename(segmap_path).replace('_gtFine_color', '')
     photo_identifier = os.path.basename(photo_path).replace('_leftImg8bit', '')
-        
-    assert segmap_identifier == photo_identifier, \
-        "[%s] and [%s] don't seem to be matching. Aborting." % (segmap_path, photo_path)
+
+    assert (
+        segmap_identifier == photo_identifier
+    ), f"[{segmap_path}] and [{photo_path}] don't seem to be matching. Aborting."
     
 
 def process_cityscapes(gtFine_dir, leftImg8bit_dir, output_dir, phase):
     save_phase = 'test' if phase == 'val' else 'train'
     savedir = os.path.join(output_dir, save_phase)
     os.makedirs(savedir, exist_ok=True)
-    os.makedirs(savedir + 'A', exist_ok=True)
-    os.makedirs(savedir + 'B', exist_ok=True)
-    print("Directory structure prepared at %s" % output_dir)
-    
-    segmap_expr = os.path.join(gtFine_dir, phase) + "/*/*_color.png"
+    os.makedirs(f'{savedir}A', exist_ok=True)
+    os.makedirs(f'{savedir}B', exist_ok=True)
+    print(f"Directory structure prepared at {output_dir}")
+
+    segmap_expr = f"{os.path.join(gtFine_dir, phase)}/*/*_color.png"
     segmap_paths = glob.glob(segmap_expr)
     segmap_paths = sorted(segmap_paths)
 
-    photo_expr = os.path.join(leftImg8bit_dir, phase) + "/*/*_leftImg8bit.png"
+    photo_expr = f"{os.path.join(leftImg8bit_dir, phase)}/*/*_leftImg8bit.png"
     photo_paths = glob.glob(photo_expr)
     photo_paths = sorted(photo_paths)
 
@@ -57,11 +58,11 @@ def process_cityscapes(gtFine_dir, leftImg8bit_dir, output_dir, phase):
         sidebyside.save(savepath, format='JPEG', subsampling=0, quality=100)
 
         # data for cyclegan where the two images are stored at two distinct directories
-        savepath = os.path.join(savedir + 'A', "%d_A.jpg" % i)
+        savepath = os.path.join(f'{savedir}A', "%d_A.jpg" % i)
         photo.save(savepath, format='JPEG', subsampling=0, quality=100)
-        savepath = os.path.join(savedir + 'B', "%d_B.jpg" % i)
+        savepath = os.path.join(f'{savedir}B', "%d_B.jpg" % i)
         segmap.save(savepath, format='JPEG', subsampling=0, quality=100)
-        
+
         if i % (len(segmap_paths) // 10) == 0:
             print("%d / %d: last image saved at %s, " % (i, len(segmap_paths), savepath))
 

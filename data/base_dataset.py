@@ -136,15 +136,11 @@ def __crop(img, pos, size):
     ow, oh = img.size
     x1, y1 = pos
     tw = th = size
-    if (ow > tw or oh > th):
-        return img.crop((x1, y1, x1 + tw, y1 + th))
-    return img
+    return img.crop((x1, y1, x1 + tw, y1 + th)) if (ow > tw or oh > th) else img
 
 
 def __flip(img, flip):
-    if flip:
-        return img.transpose(Image.FLIP_LEFT_RIGHT)
-    return img
+    return img.transpose(Image.FLIP_LEFT_RIGHT) if flip else img
 
 
 def __print_size_warning(ow, oh, w, h):

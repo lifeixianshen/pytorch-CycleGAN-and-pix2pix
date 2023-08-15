@@ -34,7 +34,7 @@ def save_images(webpage, visuals, image_path, aspect_ratio=1.0, width=256):
 
     for label, im_data in visuals.items():
         im = util.tensor2im(im_data)
-        image_name = '%s_%s.png' % (name, label)
+        image_name = f'{name}_{label}.png'
         save_path = os.path.join(image_dir, image_name)
         util.save_image(im, save_path, aspect_ratio=aspect_ratio)
         ims.append(image_name)
@@ -76,7 +76,7 @@ class Visualizer():
         if self.use_html:  # create an HTML object at <checkpoints_dir>/web/; images will be saved under <checkpoints_dir>/web/images/
             self.web_dir = os.path.join(opt.checkpoints_dir, opt.name, 'web')
             self.img_dir = os.path.join(self.web_dir, 'images')
-            print('create web directory %s...' % self.web_dir)
+            print(f'create web directory {self.web_dir}...')
             util.mkdirs([self.web_dir, self.img_dir])
         # create a logging file to store training losses
         self.log_name = os.path.join(opt.checkpoints_dir, opt.name, 'loss_log.txt')
@@ -92,7 +92,7 @@ class Visualizer():
         """If the program could not connect to Visdom server, this function will start a new server at port < self.port > """
         cmd = sys.executable + ' -m visdom.server -p %d &>/dev/null &' % self.port
         print('\n\nCould not connect to Visdom server. \n Trying to start a server....')
-        print('Command: %s' % cmd)
+        print(f'Command: {cmd}')
         Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
 
     def display_current_results(self, visuals, epoch, save_result):
@@ -105,7 +105,7 @@ class Visualizer():
         """
         if self.display_id > 0:  # show images in the browser using visdom
             ncols = self.ncols
-            if ncols > 0:        # show all the images in one visdom panel
+            if ncols > 0:# show all the images in one visdom panel
                 ncols = min(ncols, len(visuals))
                 h, w = next(iter(visuals.values())).shape[:2]
                 table_css = """<style>
@@ -120,11 +120,11 @@ class Visualizer():
                 idx = 0
                 for label, image in visuals.items():
                     image_numpy = util.tensor2im(image)
-                    label_html_row += '<td>%s</td>' % label
+                    label_html_row += f'<td>{label}</td>'
                     images.append(image_numpy.transpose([2, 0, 1]))
                     idx += 1
                     if idx % ncols == 0:
-                        label_html += '<tr>%s</tr>' % label_html_row
+                        label_html += f'<tr>{label_html_row}</tr>'
                         label_html_row = ''
                 white_image = np.ones_like(image_numpy.transpose([2, 0, 1])) * 255
                 while idx % ncols != 0:
@@ -132,13 +132,21 @@ class Visualizer():
                     label_html_row += '<td></td>'
                     idx += 1
                 if label_html_row != '':
-                    label_html += '<tr>%s</tr>' % label_html_row
+                    label_html += f'<tr>{label_html_row}</tr>'
                 try:
-                    self.vis.images(images, nrow=ncols, win=self.display_id + 1,
-                                    padding=2, opts=dict(title=title + ' images'))
-                    label_html = '<table>%s</table>' % label_html
-                    self.vis.text(table_css + label_html, win=self.display_id + 2,
-                                  opts=dict(title=title + ' labels'))
+                    self.vis.images(
+                        images,
+                        nrow=ncols,
+                        win=self.display_id + 1,
+                        padding=2,
+                        opts=dict(title=f'{title} images'),
+                    )
+                    label_html = f'<table>{label_html}</table>'
+                    self.vis.text(
+                        table_css + label_html,
+                        win=self.display_id + 2,
+                        opts=dict(title=f'{title} labels'),
+                    )
                 except VisdomExceptionBase:
                     self.create_visdom_connections()
 
@@ -162,7 +170,7 @@ class Visualizer():
                 util.save_image(image_numpy, img_path)
 
             # update website
-            webpage = html.HTML(self.web_dir, 'Experiment name = %s' % self.name, refresh=1)
+            webpage = html.HTML(self.web_dir, f'Experiment name = {self.name}', refresh=1)
             for n in range(epoch, 0, -1):
                 webpage.add_header('epoch [%d]' % n)
                 ims, txts, links = [], [], []
@@ -190,14 +198,20 @@ class Visualizer():
         self.plot_data['Y'].append([losses[k] for k in self.plot_data['legend']])
         try:
             self.vis.line(
-                X=np.stack([np.array(self.plot_data['X'])] * len(self.plot_data['legend']), 1),
+                X=np.stack(
+                    [np.array(self.plot_data['X'])]
+                    * len(self.plot_data['legend']),
+                    1,
+                ),
                 Y=np.array(self.plot_data['Y']),
                 opts={
-                    'title': self.name + ' loss over time',
+                    'title': f'{self.name} loss over time',
                     'legend': self.plot_data['legend'],
                     'xlabel': 'epoch',
-                    'ylabel': 'loss'},
-                win=self.display_id)
+                    'ylabel': 'loss',
+                },
+                win=self.display_id,
+            )
         except VisdomExceptionBase:
             self.create_visdom_connections()
 

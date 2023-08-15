@@ -27,20 +27,19 @@ def parse_args():
     parser.add_argument('--hed_mat_dir', dest='hed_mat_dir', help='directory to store output hed edges in mat file', type=str)
     parser.add_argument('--border', dest='border', help='padding border', type=int, default=128)
     parser.add_argument('--gpu_id', dest='gpu_id', help='gpu id', type=int, default=1)
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 args = parse_args()
 for arg in vars(args):
-    print('[%s] =' % arg, getattr(args, arg))
+    print(f'[{arg}] =', getattr(args, arg))
 # Make sure that caffe is on the python path:
 caffe_root = args.caffe_root   # this file is expected to be in {caffe_root}/examples/hed/
-sys.path.insert(0, caffe_root + 'python')
+sys.path.insert(0, f'{caffe_root}python')
 
 
 if not os.path.exists(args.hed_mat_dir):
-    print('create output directory %s' % args.hed_mat_dir)
+    print(f'create output directory {args.hed_mat_dir}')
     os.makedirs(args.hed_mat_dir)
 
 imgList = os.listdir(args.images_dir)
@@ -78,4 +77,6 @@ for i in range(nImgs):
     fuse = fuse[border:-border, border:-border]
     # save hed file to the disk
     name, ext = os.path.splitext(imgList[i])
-    sio.savemat(os.path.join(args.hed_mat_dir, name + '.mat'), {'edge_predict': fuse})
+    sio.savemat(
+        os.path.join(args.hed_mat_dir, f'{name}.mat'), {'edge_predict': fuse}
+    )

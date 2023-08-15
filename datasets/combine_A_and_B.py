@@ -12,7 +12,7 @@ parser.add_argument('--use_AB', dest='use_AB', help='if true: (0001_A, 0001_B) t
 args = parser.parse_args()
 
 for arg in vars(args):
-    print('[%s] = ' % arg, getattr(args, arg))
+    print(f'[{arg}] = ', getattr(args, arg))
 
 splits = os.listdir(args.fold_A)
 
@@ -32,10 +32,7 @@ for sp in splits:
     for n in range(num_imgs):
         name_A = img_list[n]
         path_A = os.path.join(img_fold_A, name_A)
-        if args.use_AB:
-            name_B = name_A.replace('_A.', '_B.')
-        else:
-            name_B = name_A
+        name_B = name_A.replace('_A.', '_B.') if args.use_AB else name_A
         path_B = os.path.join(img_fold_B, name_B)
         if os.path.isfile(path_A) and os.path.isfile(path_B):
             name_AB = name_A

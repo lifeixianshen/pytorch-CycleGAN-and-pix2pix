@@ -16,7 +16,7 @@ class cityscapes:
                         'bus', 'train', 'motorcycle', 'bicycle']
         self.mean = np.array((72.78044, 83.21195, 73.45286), dtype=np.float32)
         # import cityscapes label helper and set up label mappings
-        sys.path.insert(0, '{}/scripts/helpers/'.format(self.dir))
+        sys.path.insert(0, f'{self.dir}/scripts/helpers/')
         labels = __import__('labels')
         self.id2trainId = {label.id: label.trainId for label in labels.labels}  # dictionary mapping from raw IDs to train IDs
         self.trainId2color = {label.trainId: label.color for label in labels.labels}  # dictionary mapping train IDs to colors as 3-tuples
@@ -29,14 +29,15 @@ class cityscapes:
         relying on these separately made text files.
         '''
         if split == 'train':
-            dataset = open('{}/ImageSets/segFine/train.txt'.format(self.dir)).read().splitlines()
+            dataset = open(f'{self.dir}/ImageSets/segFine/train.txt').read().splitlines()
         else:
-            dataset = open('{}/ImageSets/segFine/val.txt'.format(self.dir)).read().splitlines()
+            dataset = open(f'{self.dir}/ImageSets/segFine/val.txt').read().splitlines()
         return [(item.split('/')[0], item.split('/')[1]) for item in dataset]
 
     def load_image(self, split, city, idx):
-        im = Image.open('{}/leftImg8bit_sequence/{}/{}/{}_leftImg8bit.png'.format(self.dir, split, city, idx))
-        return im
+        return Image.open(
+            f'{self.dir}/leftImg8bit_sequence/{split}/{city}/{idx}_leftImg8bit.png'
+        )
 
     def assign_trainIds(self, label):
         """
@@ -57,7 +58,9 @@ class cityscapes:
         Load label image as 1 x height x width integer array of label indices.
         The leading singleton dimension is required by the loss.
         """
-        label = Image.open('{}/gtFine/{}/{}/{}_gtFine_labelIds.png'.format(self.dir, split, city, idx))
+        label = Image.open(
+            f'{self.dir}/gtFine/{split}/{city}/{idx}_gtFine_labelIds.png'
+        )
         label = self.assign_trainIds(label)  # get proper labels for eval
         label = np.array(label, dtype=np.uint8)
         label = label[np.newaxis, ...]
@@ -74,8 +77,7 @@ class cityscapes:
         in_ = np.array(im, dtype=np.float32)
         in_ = in_[:, :, ::-1]
         in_ -= self.mean
-        in_ = in_.transpose((2, 0, 1))
-        return in_
+        return in_.transpose((2, 0, 1))
 
     def palette(self, label):
         '''
@@ -92,7 +94,7 @@ class cityscapes:
                 color[label == k, :] = v
         return color
 
-    def make_boundaries(label, thickness=None):
+    def make_boundaries(self, thickness=None):
         """
         Input is an image label, output is a numpy array mask encoding the boundaries of the objects
         Extract pixels at the true boundary by dilation - erosion of label.
@@ -101,11 +103,9 @@ class cityscapes:
         assert(thickness is not None)
         import skimage.morphology as skm
         void = 255
-        mask = np.logical_and(label > 0, label != void)[0]
+        mask = np.logical_and(self > 0, self != void)[0]
         selem = skm.disk(thickness)
-        boundaries = np.logical_xor(skm.dilation(mask, selem),
-                                    skm.erosion(mask, selem))
-        return boundaries
+        return np.logical_xor(skm.dilation(mask, selem), skm.erosion(mask, selem))
 
     def list_label_frames(self, split):
         """

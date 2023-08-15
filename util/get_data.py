@@ -39,9 +39,11 @@ class GetData(object):
     @staticmethod
     def _get_options(r):
         soup = BeautifulSoup(r.text, 'lxml')
-        options = [h.text for h in soup.find_all('a', href=True)
-                   if h.text.endswith(('.zip', 'tar.gz'))]
-        return options
+        return [
+            h.text
+            for h in soup.find_all('a', href=True)
+            if h.text.endswith(('.zip', 'tar.gz'))
+        ]
 
     def _present_options(self):
         r = requests.get(self.url)
@@ -92,11 +94,7 @@ class GetData(object):
             save_path_full (str) -- the absolute path to the downloaded data.
 
         """
-        if dataset is None:
-            selected_dataset = self._present_options()
-        else:
-            selected_dataset = dataset
-
+        selected_dataset = self._present_options() if dataset is None else dataset
         save_path_full = join(save_path, selected_dataset.split('.')[0])
 
         if isdir(save_path_full):

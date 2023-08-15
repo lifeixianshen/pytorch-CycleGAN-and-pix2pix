@@ -59,8 +59,7 @@ class ColorizationModel(Pix2PixModel):
         Lab = torch.cat([L2, AB2], dim=1)
         Lab = Lab[0].data.cpu().float().numpy()
         Lab = np.transpose(Lab.astype(np.float64), (1, 2, 0))
-        rgb = color.lab2rgb(Lab) * 255
-        return rgb
+        return color.lab2rgb(Lab) * 255
 
     def compute_visuals(self):
         """Calculate additional output images for visdom and HTML visualization"""
